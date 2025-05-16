@@ -1,5 +1,5 @@
 use tokio::net::TcpSocket;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{stdout, AsyncReadExt, AsyncWriteExt};
 
 // Task 1 - TCP Echo server(Smoke Test)
 #[tokio::main]
@@ -30,11 +30,12 @@ async fn main() {
 
         tokio::spawn(async move {
             let mut buffer = [0u8; 1024];
-
             
             match socket.read(&mut buffer).await {
                 Ok(0) => return,
                 Ok(_) => {
+                    *buffer.last_mut().unwrap() = '\n' as u8;
+                    let _ = stdout().write(&buffer).await;
                     if let Err(e) = socket.write_all(&buffer).await {
                         eprintln!("Write error: {e}");
                         return;
